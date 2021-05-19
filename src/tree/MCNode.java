@@ -1,7 +1,7 @@
 package tree;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import api.GameState;
 
@@ -17,7 +17,7 @@ class MCNode {
 
 	private final GameState gameState;
 	private final MCNode parent;
-	private final Set<MCNode> children;
+	private final List<MCNode> children;
 
 	private int numWins;
 	private int numIterations;
@@ -25,7 +25,7 @@ class MCNode {
 	MCNode(final GameState gameState, final MCNode parent) {
 		this.gameState = gameState;
 		this.parent = parent;
-		this.children = new HashSet<>();
+		this.children = new ArrayList<>();
 		this.numWins = 0;
 		this.numIterations = 0;
 	}
