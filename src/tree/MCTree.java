@@ -72,7 +72,13 @@ public class MCTree {
 		}
 
 		// if the leaf node has been visited before, expand it and return a random child
+		// (or return it if players win at the node)
 		curr.expand();
+
+		if (curr.getChildren().isEmpty()) {
+			return curr;
+		}
+
 		return curr.getRandomChild();
 	}
 
