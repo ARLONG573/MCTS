@@ -9,4 +9,8 @@ package api;
  */
 public interface GameState {
 
+	/**
+	 * @return The id of the player who made the move to achieve this game state
+	 */
+	public int getLastPlayer();
 }
