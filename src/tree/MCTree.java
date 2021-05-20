@@ -1,5 +1,7 @@
 package tree;
 
+import java.util.List;
+
 import api.GameState;
 
 /**
@@ -9,12 +11,17 @@ import api.GameState;
  */
 public class MCTree {
 
-	private final MCNode root;
-	private final int numIterations;
+	// exploration constant
+	private static final double C = Math.sqrt(2);
 
-	public MCTree(final GameState initialState, final int numIterations) {
+	private final MCNode root;
+	private final int numTotalIterations;
+
+	private int numIterationsDone;
+
+	public MCTree(final GameState initialState, final int numTotalIterations) {
 		this.root = new MCNode(initialState, null);
-		this.numIterations = numIterations;
+		this.numTotalIterations = numTotalIterations;
 	}
 
 	/**
@@ -25,6 +32,129 @@ public class MCTree {
 	 *         the search.
 	 */
 	public GameState search() {
-		return null;
+		// add the first set of children to the root node
+		this.root.expand();
+
+		// perform numTotalIterations times
+		for (numIterationsDone = 0; numIterationsDone < numTotalIterations; numIterationsDone++) {
+			// selection + possible expansion
+			final MCNode choice = this.selectNode();
+
+			// simulation
+			final List<Integer> result = choice.simulate();
+
+			// backpropogation
+			this.update(choice, result);
+		}
+
+		// choose the node with the most simulations
+		return this.suggestMove();
+	}
+
+	/**
+	 * This method uses the UCB1 formula to pick successive child nodes until an
+	 * unvisited leaf node is reached. Expansion will happen automatically as
+	 * necessary.
+	 * 
+	 * @return The node selected for simulation
+	 */
+	private MCNode selectNode() {
+		// pick successive child nodes until we find a leaf node
+		MCNode curr = this.root;
+
+		while (!curr.getChildren().isEmpty()) {
+			curr = this.pickChild(curr);
+		}
+
+		// if the leaf node has never been visited before, return it for simulation
+		if (curr.getNumIterations() == 0) {
+			return curr;
+		}
+
+		// if the leaf node has been visited before, expand it and return a random child
+		curr.expand();
+		return curr.getRandomChild();
+	}
+
+	/**
+	 * This method uses UCB1 to pick the best child node from the given parent.
+	 * 
+	 * @param parent
+	 *            The parent whose children we are picking from
+	 * @return The best child node of the given parent node
+	 */
+	private MCNode pickChild(final MCNode parent) {
+		double bestUCB1 = 0.0;
+		MCNode bestChild = null;
+
+		for (final MCNode child : parent.getChildren()) {
+			// if the child has no iterations yet, pick it
+			if (child.getNumIterations() == 0) {
+				return child;
+			}
+
+			final double childUCB1 = this.UCB1(child);
+
+			if (childUCB1 > bestUCB1) {
+				bestUCB1 = childUCB1;
+				bestChild = child;
+			}
+		}
+
+		return bestChild;
+	}
+
+	/**
+	 * This method computes the UCB1 value for a given node.
+	 * 
+	 * @param node
+	 *            The node to evaluate
+	 * @return The UCB1 score for the given node
+	 */
+	private double UCB1(final MCNode node) {
+		final double exploitation = node.getNumWins() / node.getNumIterations();
+		final double exploration = C * Math.sqrt(Math.log(this.numIterationsDone) / node.getNumIterations());
+
+		return exploitation + exploration;
+	}
+
+	/**
+	 * This method performs backpropogation to update the simulated node, as well as
+	 * all of its parents in the tree.
+	 * 
+	 * @param node
+	 *            The node from which we ran the simulation
+	 * @param result
+	 *            The players who won the simulation
+	 */
+	private void update(final MCNode node, final List<Integer> result) {
+		MCNode curr = node;
+
+		while (curr != this.root) {
+			curr.addResult(result);
+			curr = curr.getParent();
+		}
+	}
+
+	/**
+	 * This method is called once MCTS is complete; it picks the move that got the
+	 * most simulations.
+	 * 
+	 * @return The game state after the suggested move is made
+	 */
+	private GameState suggestMove() {
+		MCNode bestChild = null;
+
+		for (final MCNode child : this.root.getChildren()) {
+			if (bestChild == null) {
+				bestChild = child;
+			} else {
+				if (child.getNumIterations() > bestChild.getNumIterations()) {
+					bestChild = child;
+				}
+			}
+		}
+
+		return bestChild.getGameState();
 	}
 }
