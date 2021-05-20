@@ -1,5 +1,7 @@
 package tree;
 
+import java.util.List;
+
 import api.GameState;
 
 /**
@@ -39,7 +41,7 @@ public class MCTree {
 			final MCNode choice = this.selectNode();
 
 			// simulation
-			final int result = choice.simulate();
+			final List<Integer> result = choice.simulate();
 
 			// backpropogation
 			this.update(choice, result);
@@ -110,7 +112,7 @@ public class MCTree {
 	 * @return The UCB1 score for the given node
 	 */
 	private double UCB1(final MCNode node) {
-		final double exploitation = ((double) (node.getNumWins())) / node.getNumIterations();
+		final double exploitation = node.getNumWins() / node.getNumIterations();
 		final double exploration = C * Math.sqrt(Math.log(this.numIterationsDone) / node.getNumIterations());
 
 		return exploitation + exploration;
@@ -123,9 +125,9 @@ public class MCTree {
 	 * @param node
 	 *            The node from which we ran the simulation
 	 * @param result
-	 *            The player who won the simulation
+	 *            The players who won the simulation
 	 */
-	private void update(final MCNode node, final int result) {
+	private void update(final MCNode node, final List<Integer> result) {
 		MCNode curr = node;
 
 		while (curr != this.root) {
