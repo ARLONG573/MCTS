@@ -17,12 +17,14 @@ public interface GameState {
 	public int getLastPlayer();
 
 	/**
-	 * @return A list of all possible game states that can occur after one move
+	 * @return A list of all possible game states that can occur after one move (for
+	 *         node expansion purposes)
 	 */
 	public List<GameState> getNextStates();
 
 	/**
-	 * @return A single possible next game state, chosen randomly
+	 * @return A single possible next game state, chosen randomly (for simulation
+	 *         purposes)
 	 */
 	public GameState getRandomNextState();
 
