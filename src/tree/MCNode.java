@@ -21,6 +21,7 @@ class MCNode {
 
 	private double numWins; // numWins is a double to keep track of winning ties with other players
 	private int numIterations;
+	private boolean hasImmediateLoss;
 
 	MCNode(final GameState gameState, final MCNode parent) {
 		this.gameState = gameState;
@@ -28,6 +29,7 @@ class MCNode {
 		this.children = new ArrayList<>();
 		this.numWins = 0.0;
 		this.numIterations = 0;
+		this.hasImmediateLoss = false;
 	}
 
 	/**
@@ -62,30 +64,41 @@ class MCNode {
 
 		// while no one has won, pick a random next possible state
 		while (curr.getWinningPlayers().isEmpty()) {
-			final List<GameState> nextStates = curr.getNextStates();
-
-			final int randomIndex = (int) (Math.random() * nextStates.size());
-			curr = nextStates.get(randomIndex);
+			curr = curr.getRandomNextState();
 		}
 
 		return curr.getWinningPlayers();
 	}
 
 	/**
-	 * Adds the result of the simulation to this node. The result represents the
-	 * winners of the simulation, so numWins is incremented if the result contains
-	 * the player who made the move to achieve the game state that this node
-	 * represents. The point for a win is split evenly among any tying winners.
+	 * Adds the result of the simulation to this node. If this node is among a group
+	 * of tying winners, the value of the win is split evenly.
 	 * 
 	 * @param result
 	 *            The result of the simulation.
 	 */
 	void addResult(final List<Integer> result) {
 		if (result.contains(this.gameState.getLastPlayer())) {
-			this.numWins += (1.0 / result.size());
+			this.numWins += (10.0 / result.size());
 		}
 
 		this.numIterations++;
+	}
+
+	/**
+	 * @return Whether or not this node has any child node such that this node has
+	 *         not won.
+	 */
+	boolean hasImmediateLoss() {
+		return this.hasImmediateLoss;
+	}
+
+	/**
+	 * This method marks this node has having a loss on the next move; this node
+	 * will no longer be chosen during the selection phase.
+	 */
+	void markImmediateLoss() {
+		this.hasImmediateLoss = true;
 	}
 
 	/**

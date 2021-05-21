@@ -22,6 +22,11 @@ public interface GameState {
 	public List<GameState> getNextStates();
 
 	/**
+	 * @return A single possible next game state, chosen randomly
+	 */
+	public GameState getRandomNextState();
+
+	/**
 	 * @return A list of the ids of the players who have won in this position - a
 	 *         position that represents an unfinished game should return an empty
 	 *         list

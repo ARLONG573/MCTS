@@ -15,13 +15,11 @@ public class MCTree {
 	private static final double C = Math.sqrt(2);
 
 	private final MCNode root;
-	private final int numTotalIterations;
+	private final int numIterations;
 
-	private int numIterationsDone;
-
-	public MCTree(final GameState initialState, final int numTotalIterations) {
+	public MCTree(final GameState initialState, final int numIterations) {
 		this.root = new MCNode(initialState, null);
-		this.numTotalIterations = numTotalIterations;
+		this.numIterations = numIterations;
 	}
 
 	/**
@@ -35,8 +33,8 @@ public class MCTree {
 		// add the first set of children to the root node
 		this.root.expand();
 
-		// perform numTotalIterations times
-		for (numIterationsDone = 0; numIterationsDone < numTotalIterations; numIterationsDone++) {
+		// perform numIterations times
+		for (int i = 0; i < this.numIterations; i++) {
 			// selection + possible expansion
 			final MCNode choice = this.selectNode();
 
@@ -90,7 +88,7 @@ public class MCTree {
 	 * @return The best child node of the given parent node
 	 */
 	private MCNode pickChild(final MCNode parent) {
-		double bestUCB1 = 0.0;
+		double bestUCB1 = -Double.MAX_VALUE;
 		MCNode bestChild = null;
 
 		for (final MCNode child : parent.getChildren()) {
@@ -101,7 +99,7 @@ public class MCTree {
 
 			final double childUCB1 = this.UCB1(child);
 
-			if (childUCB1 > bestUCB1) {
+			if (childUCB1 >= bestUCB1) {
 				bestUCB1 = childUCB1;
 				bestChild = child;
 			}
@@ -118,8 +116,13 @@ public class MCTree {
 	 * @return The UCB1 score for the given node
 	 */
 	private double UCB1(final MCNode node) {
+		if (node.hasImmediateLoss()) {
+			return -Double.MAX_VALUE;
+		}
+
 		final double exploitation = node.getNumWins() / node.getNumIterations();
-		final double exploration = C * Math.sqrt(Math.log(this.numIterationsDone) / node.getNumIterations());
+		final double exploration = C
+				* Math.sqrt(Math.log(node.getParent().getNumIterations()) / node.getNumIterations());
 
 		return exploitation + exploration;
 	}
@@ -130,14 +133,22 @@ public class MCTree {
 	 * 
 	 * @param node
 	 *            The node from which we ran the simulation
-	 * @param result
+	 * @param simResult
 	 *            The players who won the simulation
 	 */
-	private void update(final MCNode node, final List<Integer> result) {
+	private void update(final MCNode node, final List<Integer> simResult) {
+		// if node is a finished game state such that its parent is not in the winning
+		// result, mark that parent as having an immediate loss so that it is never
+		// visited again
+		final List<Integer> nodeResult = node.getGameState().getWinningPlayers();
+		if (!nodeResult.isEmpty() && !nodeResult.contains(node.getParent().getGameState().getLastPlayer())) {
+			node.getParent().markImmediateLoss();
+		}
+
 		MCNode curr = node;
 
-		while (curr != this.root) {
-			curr.addResult(result);
+		while (curr != null) {
+			curr.addResult(simResult);
 			curr = curr.getParent();
 		}
 	}
@@ -160,6 +171,8 @@ public class MCTree {
 				}
 			}
 		}
+
+		System.out.println("Expected value = " + (bestChild.getNumWins() / bestChild.getNumIterations()) * 10 + "%");
 
 		return bestChild.getGameState();
 	}
