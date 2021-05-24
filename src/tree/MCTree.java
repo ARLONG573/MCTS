@@ -15,11 +15,11 @@ public class MCTree {
 	private static final double C = Math.sqrt(2);
 
 	private final MCNode root;
-	private final int numIterations;
+	private final int seconds;
 
-	public MCTree(final GameState initialState, final int numIterations) {
+	public MCTree(final GameState initialState, final int seconds) {
 		this.root = new MCNode(initialState, null);
-		this.numIterations = numIterations;
+		this.seconds = seconds;
 	}
 
 	/**
@@ -33,8 +33,11 @@ public class MCTree {
 		// add the first set of children to the root node
 		this.root.expand();
 
-		// perform numIterations times
-		for (int i = 0; i < this.numIterations; i++) {
+		// perform for given amount of time
+		final long startTime = System.currentTimeMillis();
+		int numIterations = 0;
+
+		while (System.currentTimeMillis() < startTime + (1000 * this.seconds)) {
 			// selection + possible expansion
 			final MCNode choice = this.selectNode();
 
@@ -43,7 +46,12 @@ public class MCTree {
 
 			// backpropogation
 			this.update(choice, result);
+
+			numIterations++;
 		}
+
+		System.out.println("Performed " + numIterations + " iterations in "
+				+ (System.currentTimeMillis() - startTime) / 1000.0 + " seconds");
 
 		// choose the node with the most simulations
 		return this.suggestMove();

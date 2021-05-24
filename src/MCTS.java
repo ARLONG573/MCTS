@@ -13,17 +13,17 @@ public class MCTS {
 	/**
 	 * This method drives the tree search operation by initializing a search tree
 	 * with the given GameState and telling the tree to execute MCTS for the given
-	 * number of iterations.
+	 * number of seconds.
 	 * 
 	 * @param initialState
 	 *            The state from which to start the search
-	 * @param numIterations
-	 *            The number of iterations that the search should perform
+	 * @param seconds
+	 *            The number of seconds that should be spent searching
 	 * @return The GameState that is the result of performing the move suggested by
 	 *         the search
 	 */
-	public static GameState search(final GameState initialState, final int numIterations) {
-		final MCTree tree = new MCTree(initialState, numIterations);
+	public static GameState search(final GameState initialState, final int seconds) {
+		final MCTree tree = new MCTree(initialState, seconds);
 		return tree.search();
 	}
 }
