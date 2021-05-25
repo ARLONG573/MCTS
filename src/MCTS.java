@@ -19,11 +19,15 @@ public class MCTS {
 	 *            The state from which to start the search
 	 * @param seconds
 	 *            The number of seconds that should be spent searching
+	 * @param simulationTimeout
+	 *            The maximum amount of time a simulation is allowed to take before
+	 *            being considered "dead" (in a state where the game cannot possibly
+	 *            end)
 	 * @return The GameState that is the result of performing the move suggested by
 	 *         the search
 	 */
-	public static GameState search(final GameState initialState, final int seconds) {
-		final MCTree tree = new MCTree(initialState, seconds);
+	public static GameState search(final GameState initialState, final int seconds, final int simulationTimeout) {
+		final MCTree tree = new MCTree(initialState, seconds, simulationTimeout);
 		return tree.search();
 	}
 }

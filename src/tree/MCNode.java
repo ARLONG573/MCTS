@@ -56,15 +56,26 @@ class MCNode {
 	}
 
 	/**
+	 * @param simulationTimeout
+	 *            The amount of seconds that a simulation may run before being
+	 *            considered "dead" (the game is in a state where it can never be
+	 *            finished)
 	 * @return A list of integers representing the players who won the random
 	 *         playout
 	 */
-	List<Integer> simulate() {
+	List<Integer> simulate(final int simulationTimeout) {
 		GameState curr = this.gameState;
+
+		final long startTime = System.currentTimeMillis();
 
 		// while no one has won, pick a random next possible state
 		while (curr.getWinningPlayers().isEmpty()) {
 			curr = curr.getRandomNextState();
+
+			// a timeout counts as a win for nobody
+			if (System.currentTimeMillis() > startTime + (1000 * simulationTimeout)) {
+				return new ArrayList<>();
+			}
 		}
 
 		return curr.getWinningPlayers();

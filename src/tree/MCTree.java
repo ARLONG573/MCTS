@@ -16,10 +16,12 @@ public class MCTree {
 
 	private final MCNode root;
 	private final int seconds;
+	private final int simulationTimeout;
 
-	public MCTree(final GameState initialState, final int seconds) {
+	public MCTree(final GameState initialState, final int seconds, final int simulationTimeout) {
 		this.root = new MCNode(initialState, null);
 		this.seconds = seconds;
+		this.simulationTimeout = simulationTimeout;
 	}
 
 	/**
@@ -42,7 +44,7 @@ public class MCTree {
 			final MCNode choice = this.selectNode();
 
 			// simulation
-			final List<Integer> result = choice.simulate();
+			final List<Integer> result = choice.simulate(this.simulationTimeout);
 
 			// backpropogation
 			this.update(choice, result);
